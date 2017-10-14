@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2013 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="0dp"
+    android:elevation="7dp"
+    android:weightSum="1">
+
+
+
+    <Button
+        android:id="@+id/arm_btn"
+
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/buttonshape"
+        android:elevation="5dp"
+        android:shadowColor="#A8A8A8"
+        android:shadowDx="3"
+        android:shadowDy="3"
+        android:shadowRadius="5"
+        android:text="ARM"
+        android:textColor="#FFFFFF"
+        android:textSize="32sp"
+        android:theme="@android:style/Theme.Material.Light" />
+
+    <Button
+        android:id="@+id/disarm_btn"
+
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/buttonshape1"
+        android:shadowColor="#A8A8A8"
+        android:shadowDx="3"
+        android:shadowDy="3"
+        android:shadowRadius="5"
+        android:text="DISARM"
+        android:textColor="#FFFFFF"
+        android:textSize="32sp"
+        android:visibility="visible" />
+
+    <Button
+        android:id="@+id/disconnect"
+
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_alignParentTop="true"
+
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/buttonshape2"
+        android:text="DISCONNECT"
+        android:textColor="#FFFFFF"
+        android:textSize="25sp" />
+
+    <Button
+        android:id="@+id/connect"
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/buttonshape3"
+        android:text="CONNECT"
+        android:textColor="#FFFFFF"
+        android:textSize="25sp"
+        android:visibility="visible" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignBaseline="@+id/disconnect"
+        android:layout_alignBottom="@+id/disconnect"
+        android:layout_centerHorizontal="true">
+
+        <Button
+            android:id="@+id/calib_imu"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/buttonshape1"
+            android:text="Calibrate IMU"
+            android:layout_marginBottom="13dp"
+            android:layout_above="@+id/calib_compass"
+            android:layout_centerHorizontal="true" />
+
+        <Button
+            android:id="@+id/calib_compass"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/buttonshape1"
+            android:text="Calibrate Compass"
+            android:layout_marginBottom="68dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignStart="@+id/calib_imu" />
+
+        <Button
+            android:id="@+id/tilt"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/buttonshape1"
+            android:text= "Use Tilt"
+            android:layout_marginBottom="12dp"
+            android:layout_above="@+id/calib_imu"
+            android:layout_alignStart="@+id/calib_imu" />
+
+        <Button
+            android:id="@+id/joy"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/tilt"
+            android:layout_alignBottom="@+id/tilt"
+            android:layout_alignStart="@+id/tilt"
+            android:background="@drawable/buttonshape1"
+            android:text="Use Joystick" />
+
+        <com.sanam.anshul.hexdronecontroller.JoystickView
+            android:layout_width="280dp"
+            android:layout_height="350dp"
+            android:id="@+id/joystick"/>
+
+        <com.sanam.anshul.hexdronecontroller.JoystickViewR
+            android:layout_width="280dp"
+            android:layout_height="350dp"
+            android:id="@+id/joystickR"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="8dp" />
+
+    </RelativeLayout>
+</RelativeLayout>
