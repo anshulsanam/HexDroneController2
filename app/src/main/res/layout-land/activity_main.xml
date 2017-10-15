@@ -41,8 +41,9 @@
         android:shadowRadius="5"
         android:text="ARM"
         android:textColor="#FFFFFF"
-        android:textSize="32sp"
-        android:theme="@android:style/Theme.Material.Light" />
+        android:textSize="32sp"/>
+        //android:theme="@android:style/Theme.Material.Light"
+
 
     <Button
         android:id="@+id/disarm_btn"
@@ -96,50 +97,6 @@
         android:layout_alignBottom="@+id/disconnect"
         android:layout_centerHorizontal="true">
 
-        <Button
-            android:id="@+id/calib_imu"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/buttonshape1"
-            android:text="Calibrate IMU"
-            android:layout_marginBottom="13dp"
-            android:layout_above="@+id/calib_compass"
-            android:layout_centerHorizontal="true" />
-
-        <Button
-            android:id="@+id/calib_compass"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/buttonshape1"
-            android:text="Calibrate Compass"
-            android:layout_marginBottom="68dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignStart="@+id/calib_imu" />
-
-        <Button
-            android:id="@+id/tilt"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/buttonshape1"
-            android:text= "Use Tilt"
-            android:layout_marginBottom="12dp"
-            android:layout_above="@+id/calib_imu"
-            android:layout_alignStart="@+id/calib_imu" />
-
-        <Button
-            android:id="@+id/joy"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/tilt"
-            android:layout_alignBottom="@+id/tilt"
-            android:layout_alignStart="@+id/tilt"
-            android:background="@drawable/buttonshape1"
-            android:text="Use Joystick" />
-
         <com.sanam.anshul.hexdronecontroller.JoystickView
             android:layout_width="280dp"
             android:layout_height="350dp"
@@ -152,6 +109,40 @@
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/joy"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/buttonshape1"
+            android:text="Use Joystick"
+            android:layout_alignTop="@+id/buttonConnectMyo"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="44dp" />
+
+        <Button
+            android:id="@+id/tilt"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/buttonshape1"
+            android:text= "Use Tilt"
+            android:layout_marginBottom="54dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignStart="@+id/buttonConnectMyo" />
+
+        <Button
+            android:id="@+id/buttonConnectMyo"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/buttonshape1"
+            android:text="Connect to Myo"
+            android:onClick="ConnectToMyo (MainActivity)"
+            android:layout_above="@+id/tilt"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="29dp" />
 
     </RelativeLayout>
 </RelativeLayout>

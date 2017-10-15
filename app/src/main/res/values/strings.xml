@@ -29,4 +29,15 @@
     <string name="red_slide">Red</string>
     <string name="blue_slide">Blue</string>
     <string name="green_slide">Green</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="scan">Scan</string>
+    <string name="pose_fist">Fist</string>
+    <string name="pose_wavein">Wave In</string>
+    <string name="pose_waveout">Wave Out</string>
+    <string name="pose_fingersspread">Fingers Spread</string>
+    <string name="pose_rest">Rest</string>
+    <string name="arm_left">Left Arm</string>
+    <string name="arm_right">Right Arm</string>
+    <string name="unlocked">Unlocked</string>
+    <string name="locked">Locked</string>
 </resources>

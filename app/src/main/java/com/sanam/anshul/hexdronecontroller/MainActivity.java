@@ -1,6 +1,40 @@
 package com.sanam.anshul.hexdronecontroller;
 
+
+
+
+
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.widget.TextView;
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.sanam.anshul.hexdronecontroller.inputmanagercompat.DataFilter;
+import com.thalmic.myo.AbstractDeviceListener;
+import com.thalmic.myo.Arm;
+import com.thalmic.myo.DeviceListener;
+import com.thalmic.myo.Hub;
+import com.thalmic.myo.Myo;
+import com.thalmic.myo.Pose;
+import com.thalmic.myo.Quaternion;
+import com.thalmic.myo.Vector3;
+import com.thalmic.myo.XDirection;
+import com.thalmic.myo.scanner.ScanActivity;
+
+
 import android.graphics.drawable.ColorDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -56,10 +90,8 @@ import android.view.Menu;
 import android.widget.SeekBar;
 import android.widget.ToggleButton;
 
-import static android.support.v4.math.MathUtils.clamp;
-import static com.sanam.anshul.hexdronecontroller.Dpad.LEFT;
-import static com.sanam.anshul.hexdronecontroller.Dpad.RIGHT;
-import static com.sanam.anshul.hexdronecontroller.Dpad.UP;
+//import static android.support.v4.math.MathUtils.clamp;
+
 
 import com.sanam.anshul.hexdronecontroller.inputmanagercompat.InputManagerCompat;
 import com.sanam.anshul.hexdronecontroller.inputmanagercompat.InputManagerCompat.InputDeviceListener;
@@ -97,8 +129,18 @@ import java.util.Random;
 public class MainActivity extends Activity implements JoystickView.JoystickListener, JoystickViewR.JoystickListener, SensorEventListener, InputManager.InputDeviceListener {
     private final static String TAG = MainActivity.class.getSimpleName();
 
+    public void ConnectToMyo(View v)
+    {
+        Intent intent = new Intent(this, ScanActivity.class);
+        this.startActivity(intent);
+        myoconnected = true;
+    }
 
+    int yawvals=1500;
 
+    private float calibroll = 0;
+    private float calibpitch = 0;
+    private float calibyaw = 0;
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
     private TextView isSerial;
@@ -108,12 +150,12 @@ public class MainActivity extends Activity implements JoystickView.JoystickListe
 
     private Button connectButton;
     private Button disconnectButton;
-
+    private Button myobutton;
     private Button calib_imuButton;
     private Button calib_compassButton;
 
     private Button tiltControl;
-
+    boolean myoconnected = false;
     private Button joystickControl;
 
     private String mDeviceName;
@@ -158,6 +200,7 @@ public class MainActivity extends Activity implements JoystickView.JoystickListe
 
     private SensorManager mSensorManager = null;
 
+    private float armpitch, armroll, armyaw;
     // angular speeds from gyro
     private float[] gyro = new float[3];
 
@@ -194,28 +237,173 @@ public class MainActivity extends Activity implements JoystickView.JoystickListe
     public boolean useJoystick = true;
     public boolean useGamepad = false;
 
+    public int i;
+
     Dpad mDpad = new Dpad();
 
+    private DeviceListener mListener = new AbstractDeviceListener() {
+        // onConnect() is called whenever a Myo has been connected.
+        @Override
+        public void onConnect(Myo myo, long timestamp) {
+            // Set the text color of the text view to cyan when a Myo connects.
+            //mTextView.setTextColor(Color.CYAN);
+        }
+        // onDisconnect() is called whenever a Myo has been disconnected.
+        @Override
+        public void onDisconnect(Myo myo, long timestamp) {
+            // Set the text color of the text view to red when a Myo disconnects.
+           // mTextView.setTextColor(Color.RED);
+        }
+        // onArmSync() is called whenever Myo has recognized a Sync Gesture after someone has put it on their
+        // arm. This lets Myo know which arm it's on and which way it's facing.
+        @Override
+        public void onArmSync(Myo myo, long timestamp, Arm arm, XDirection xDirection) {
+            System.out.println("synced");
+            Timer t = new Timer();
 
-    public ArrayList getGameControllerIds() {
-        ArrayList gameControllerDeviceIds = new ArrayList();
-        int[] deviceIds = InputDevice.getDeviceIds();
-        for (int deviceId : deviceIds) {
-            InputDevice dev = InputDevice.getDevice(deviceId);
-            int sources = dev.getSources();
+            t.scheduleAtFixedRate(new TimerTask() {
+                long t0 = System.currentTimeMillis();
 
-            // Verify that the device has gamepad buttons, control sticks, or both.
-            if (((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD)
-                    || ((sources & InputDevice.SOURCE_JOYSTICK)
-                    == InputDevice.SOURCE_JOYSTICK)) {
-                // This device is a game controller. Store its device ID.
-                if (!gameControllerDeviceIds.contains(deviceId)) {
-                    gameControllerDeviceIds.add(deviceId);
+                @Override
+                public void run() {
+                    if (System.currentTimeMillis() - t0 > 10 * 1000) {
+
+
+                        cancel();
+
+                    }
+                    else
+                    {
+                        System.out.println("running");
+                        if(armroll<=rollmin)
+                            rollmin = armroll;
+                        if(armroll>=rollmax)
+                            rollmax = armroll;
+
+                        if(armpitch<=pitchmin)
+                            pitchmin = armpitch;
+                        if(armpitch>=pitchmax)
+                            pitchmax = armpitch;
+
+                        if(armyaw<=yawmin)
+                            yawmin = armyaw;
+                        if(armyaw>=yawmax)
+                            yawmax = armyaw;
+
+
+                    }
                 }
+
+            },0,50);        }
+        // onArmUnsync() is called whenever Myo has detected that it was moved from a stable position on a person's arm after
+        // it recognized the arm. Typically this happens when someone takes Myo off of their arm, but it can also happen
+        // when Myo is moved around on the arm.
+        @Override
+        public void onArmUnsync(Myo myo, long timestamp) {
+           // mTextView.setText(R.string.hello_world);
+        }
+        // onUnlock() is called whenever a synced Myo has been unlocked. Under the standard locking
+        // policy, that means poses will now be delivered to the listener.
+        @Override
+        public void onUnlock(Myo myo, long timestamp) {
+            //mLockStateView.setText(R.string.unlocked);
+        }
+        // onLock() is called whenever a synced Myo has been locked. Under the standard locking
+        // policy, that means poses will no longer be delivered to the listener.
+        @Override
+        public void onLock(Myo myo, long timestamp) {
+//           // mLockStateView.setText(R.string.locked);
+        }
+        // onOrientationData() is called whenever a Myo provides its current orientation,
+        // represented as a quaternion.
+        @Override
+        public void onOrientationData(Myo myo, long timestamp, Quaternion rotation) {
+            // Calculate Euler angles (roll, pitch, and yaw) from the quaternion.
+            float roll = (float) Math.toDegrees(Quaternion.roll(rotation));
+            float pitch = (float) Math.toDegrees(Quaternion.pitch(rotation));
+            float yaw = (float) Math.toDegrees(Quaternion.yaw(rotation));
+            // Adjust roll and pitch for the orientation of the Myo on the arm.
+
+            armroll = roll;
+            armpitch = pitch;
+            armyaw = yaw;
+
+            armroll = (int)((float)armroll);
+            armpitch = (int)((float)armpitch);
+            armyaw = (int)((float)armyaw/2);
+
+            // Next, we apply a rotation to the text view using the roll, pitch, and yaw.
+            //.println(armroll + " " + armpitch + " " + armyaw);
+        }
+        // onPose() is called whenever a Myo provides a new pose.
+        @Override
+        public void onPose(Myo myo, long timestamp, Pose pose) {
+            // Handle the cases of the Pose enumeration, and change the text of the text view
+            // based on the pose we receive.
+            switch (pose) {
+                case UNKNOWN:
+                    //mTextView.setText(getString(R.string.hello_world));
+                    break;
+                case REST:
+                    yawvals = 1500;
+                case DOUBLE_TAP:
+                    //int restTextId = R.string.hello_world;
+                    //System.out.println("Double tap");
+                    //mTextView.setText(getString(restTextId));
+                    yawvals = 1500;
+                    break;
+                case FIST:
+                    System.out.println(getString(R.string.pose_fist));
+                    yawvals = 1500;
+                    //pitchspeed = 1600;
+                    break;
+                case WAVE_IN:
+                    System.out.println(getString(R.string.pose_wavein));
+                    yawvals = 1300;
+                    break;
+                case WAVE_OUT:
+                    System.out.println(getString(R.string.pose_waveout));
+                    yawvals = 1700;
+                    break;
+                case FINGERS_SPREAD:
+                    System.out.println(getString(R.string.pose_fingersspread));
+                    yawvals = 1500;
+                    break;
+            }
+            if (pose != Pose.UNKNOWN && pose != Pose.REST) {
+                // Tell the Myo to stay unlocked until told otherwise. We do that here so you can
+                // hold the poses without the Myo becoming locked.
+                myo.unlock(Myo.UnlockType.HOLD);
+                // Notify the Myo that the pose has resulted in an action, in this case changing
+                // the text on the screen. The Myo will vibrate.
+                myo.notifyUserAction();
+            } else {
+                // Tell the Myo to stay unlocked only for a short period. This allows the Myo to
+                // stay unlocked while poses are being performed, but lock after inactivity.
+                //myo.unlock(Myo.UnlockType.TIMED);
             }
         }
-        return gameControllerDeviceIds;
-    }
+        DataFilter dataFilter = new DataFilter();
+        double oldAccelX = 0;
+        double oldAccelY = 0;
+        double oldAccelZ = 0;
+        @Override
+        public void onAccelerometerData(Myo myo, long timestamp, Vector3 accel)
+        {
+            double smoothedX = dataFilter.lowPass(oldAccelX,accel.x());
+            double smoothedY = dataFilter.lowPass(oldAccelY,accel.y());
+            double smoothedZ = dataFilter.lowPass(oldAccelZ,accel.z());
+
+            /*accelXData.setText("X: " + Double.toString(smoothedX));
+            accelYData.setText("Y: " + Double.toString(smoothedY));
+            accelZData.setText("Z: " + Double.toString(smoothedZ));*/
+            float[] accelData = {(float)smoothedX, (float)smoothedY, (float)smoothedZ};
+
+            //mTextView.setText("State: " + detectX.programState);
+        }
+    };
+
+
 
 
 
@@ -327,7 +515,8 @@ public class MainActivity extends Activity implements JoystickView.JoystickListe
                 finish();
             }
             // Automatically connects to the device upon successful start-up initialization.
-            mBluetoothLeService.connect(mDeviceAddress);
+            if(myoconnected == true)
+                mBluetoothLeService.connect(mDeviceAddress);
         }
 
         @Override
@@ -418,6 +607,7 @@ public class MainActivity extends Activity implements JoystickView.JoystickListe
 
 
 
+
                             // overwrite gyro matrix and orientation with fused orientation
                             // to comensate gyro drift
                             //sensorX = fusedOrientation[0];
@@ -431,6 +621,10 @@ public class MainActivity extends Activity implements JoystickView.JoystickListe
                             {
 //                                channels[0] = (int) constrain( map(roll, -0.7f, 0.7f, 2000f, 1000f), 1000f, 2000f);
 //                                channels[1] = (int) constrain( map(pitch, -0.7f, 0.7f, 1000f, 2000f), 1000f, 2000f);
+
+
+                                //System.out.println(rollmin + "  " + rollmax);
+
                                 if(useGamepad)
                                 {
                                     channels[3] = (int) (map(Joythrottle, 0f, -1f, 1000f, 2000f));
@@ -450,16 +644,20 @@ public class MainActivity extends Activity implements JoystickView.JoystickListe
 
                                 else
                                 {
-                                    channels[0] = (int) constrain( map(roll, -0.7f, 0.7f, 2000f, 1000f), 1000f, 2000f);
-                                    channels[1] = (int) constrain( map(pitch, -0.7f, 0.7f, 1000f, 2000f), 1000f, 2000f);
+                                    channels[0] = (int) constrain( map(armroll, rollmax, rollmin, 2000f, 1000f), 1000f, 2000f);
+                                    channels[1] = (int) constrain( map(armpitch, pitchmax, rollmax, 1000f, 2000f), 1000f, 2000f);
                                     //System.out.println("Roll: " + channels[0] + "    " + "Pitch: " + channels[1]);
                                 }
 
-                                channels[2] = (int) getJoystickX();
-                                                                         //channels[2] = (int) constrain( map(yaw, -0.7f, 0.7f, 1000f, 2000f), 1000f, 2000f);
-                                channels[3] = (int) getJoystickY();
+                                //channels[2] = (int) getJoystickX();
+                                channels[0] = (int) constrain( map(armyaw, yawmin, yawmax, 2000f, 1000f), 1000f, 2000f); //yawvals
+                                channels[1] = (int) constrain( map(armpitch, pitchmax, pitchmin, 1000f, 2000f), 1000f, 2000f);
+                                channels[2] = 1500;
+                                channels[3] = (int) constrain( map(armroll, rollmin, rollmax, 2000f, 1000f)-500, 1000f, 2000f);
 
-                                //System.out.println(channels[0]  + " " + channels[1] + " " + channels[2] + " " + channels[3]);
+
+                               System.out.println(channels[0]  + " " + channels[1] + " " + channels[2] + " " + channels[3]);
+
                                 writeValue(rcTransmitter.sendRC(channels));
                             }
 
@@ -502,14 +700,47 @@ public class MainActivity extends Activity implements JoystickView.JoystickListe
 //        return false;
 //    }
 
+    float rollmin = 100;
+    float rollmax = 0;
+
+    float pitchmin = 100;
+    float pitchmax = 0;
+
+    float yawmin = 100;
+    float yawmax = 0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //ConnectToMyo();
         gyroOrientation[0] = 0.0f;
         gyroOrientation[1] = 0.0f;
         gyroOrientation[2] = 0.0f;
+
+
+
+
+
+
+
+
+        Hub hub = Hub.getInstance();
+        if (!hub.init(this, getPackageName())) {
+            // We can't do anything with the Myo device if the Hub can't be initialized, so exit.
+            Toast.makeText(this, "Couldn't initialize Hub", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+        // Next, register for DeviceListener callbacks.
+        Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
+        Hub.getInstance().setSendUsageData(false);
+        hub.addListener(mListener);
+
+
+
+
+
 
         // initialise gyroMatrix with identity matrix
         gyroMatrix[0] = 1.0f; gyroMatrix[1] = 0.0f; gyroMatrix[2] = 0.0f;
@@ -526,11 +757,12 @@ public class MainActivity extends Activity implements JoystickView.JoystickListe
 
 
         connectButton = (Button) findViewById(R.id.connect);
+        myobutton = (Button) findViewById(R.id.buttonConnectMyo);
         disconnectButton = (Button) findViewById(R.id.disconnect);
         disconnectButton.setVisibility(View.GONE);
         connectButton.setVisibility(View.GONE);
-        calib_imuButton = (Button) findViewById(R.id.calib_imu);
-        calib_compassButton = (Button) findViewById(R.id.calib_compass);
+        //calib_imuButton = (Button) findViewById(R.id.calib_imu);
+        //calib_compassButton = (Button) findViewById(R.id.calib_compass);
 
         tiltControl = (Button) findViewById(R.id.tilt);
         joystickControl = (Button) findViewById(R.id.joy);
@@ -572,6 +804,11 @@ public class MainActivity extends Activity implements JoystickView.JoystickListe
             }
         });
 
+        myobutton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                ConnectToMyo(v);
+            }
+        });
 
         armButton.setOnClickListener(new View.OnClickListener() {
 
@@ -626,46 +863,46 @@ public class MainActivity extends Activity implements JoystickView.JoystickListe
                 armed = false;
             }
         });
-        calib_imuButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                paused = true;
-                Timer t = new Timer();
-                t.scheduleAtFixedRate(new TimerTask() {
-                    long t0 = System.currentTimeMillis();
-
-                    @Override
-                    public void run() {
-                        if (System.currentTimeMillis() - t0 > 0.5 * 1000) {
-                            cancel();
-                            paused = false;
-                        } else {
-                            writeValue(rcTransmitter.CalibrateIMU());
-                        }
-                    }
-
-                },0,50);
-            }
-        });
-        calib_compassButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                paused = true;
-                Timer t = new Timer();
-                t.scheduleAtFixedRate(new TimerTask() {
-                    long t0 = System.currentTimeMillis();
-
-                    @Override
-                    public void run() {
-                        if (System.currentTimeMillis() - t0 > 0.5 * 1000) {
-                            cancel();
-                            paused = false;
-                        } else {
-                            writeValue(rcTransmitter.CalibrateCompass());
-                        }
-                    }
-
-                },0,50);
-            }
-        });
+//        calib_imuButton.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//                paused = true;
+//                Timer t = new Timer();
+//                t.scheduleAtFixedRate(new TimerTask() {
+//                    long t0 = System.currentTimeMillis();
+//
+//                    @Override
+//                    public void run() {
+//                        if (System.currentTimeMillis() - t0 > 0.5 * 1000) {
+//                            cancel();
+//                            paused = false;
+//                        } else {
+//                            writeValue(rcTransmitter.CalibrateIMU());
+//                        }
+//                    }
+//
+//                },0,50);
+//            }
+//        });
+//        calib_compassButton.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//                paused = true;
+//                Timer t = new Timer();
+//                t.scheduleAtFixedRate(new TimerTask() {
+//                    long t0 = System.currentTimeMillis();
+//
+//                    @Override
+//                    public void run() {
+//                        if (System.currentTimeMillis() - t0 > 0.5 * 1000) {
+//                            cancel();
+//                            paused = false;
+//                        } else {
+//                            writeValue(rcTransmitter.CalibrateCompass());
+//                        }
+//                    }
+//
+//                },0,50);
+//            }
+//        });
 
         tiltControl.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -810,6 +1047,11 @@ public class MainActivity extends Activity implements JoystickView.JoystickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Hub.getInstance().removeListener(mListener);
+        if (isFinishing()) {
+            // The Activity is finishing, so shutdown the Hub. This will disconnect from the Myo.
+            Hub.getInstance().shutdown();
+        }
         unbindService(mServiceConnection);
         mBluetoothLeService = null;
     }
@@ -835,6 +1077,12 @@ public class MainActivity extends Activity implements JoystickView.JoystickListe
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
         switch(item.getItemId()) {
 
             case android.R.id.home:
@@ -844,6 +1092,10 @@ public class MainActivity extends Activity implements JoystickView.JoystickListe
         }
         return super.onOptionsItemSelected(item);
     }
+
+
+
+
 
     private void updateConnectionState(final int resourceId) {
         runOnUiThread(new Runnable() {
