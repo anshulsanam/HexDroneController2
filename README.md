@@ -12,6 +12,6 @@ Also, in a recent hackathon I added the ability to interface with the [Myo Armba
 Screenshots:
 
 
-[searching for drone](https://i.imgur.com/b412qhq.png)
+![searching for drone](https://i.imgur.com/b412qhq.png)
 
-[control console](https://i.imgur.com/8Z6bLuE.png)
+![control console](https://i.imgur.com/8Z6bLuE.png)
